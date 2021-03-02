@@ -1,0 +1,62 @@
+= Architecture Room
+
+Quarkus-Applikation für das Besucher-Tracking
+
+
+== Übersicht
+
+[ditaa]
+....
+
++--------+            +-------+       +-------------------+
+|Browser | ---json--> |Quarkus| -jdbc-| Postgres-Datenbank|
+| / curl |            +-------+       +-------------------+
++--------+
+....
+
+
+== Start
+
+=== Projekt generieren
+
+[source,bash]
+----
+ mvn io.quarkus:quarkus-maven-plugin:1.12.0.Final:create \
+> -DprojectGroupId=org.acme \
+> -DprojectArtifactId=arch-ws \
+> -DclassName="org.acme.archws.json.Visit" \
+> -Dpath="/visit" \
+> -Dextensions="resteasy,resteasy-jackson,hibernate-orm-panache,jdbc-postgresql"
+----
+
+=== Klassen implementieren
+
+Visit.java
+VisitService.java
+
+=== Konfiguration via `application.properties`
+
+[source,java]
+----
+quarkus.datasource.db-kind = postgresql
+quarkus.datasource.username = sarah
+quarkus.datasource.password = connor
+quarkus.datasource.jdbc.url = jdbc:postgresql://172.31.7.7:5432/arch-ws
+
+# create/update the database at startup
+quarkus.hibernate-orm.database.generation = update
+----
+
+=== Test mit Rest-Assured
+
+Fluent-Syntax
+
+[source, java]
+----
+        given()
+                .header(acceptJson)
+            .when()
+                .get("/visit")
+            .then()
+                .statusCode(200);
+----
