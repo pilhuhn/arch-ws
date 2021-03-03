@@ -60,3 +60,106 @@ Fluent-Syntax
             .then()
                 .statusCode(200);
 ----
+
+
+== App starten
+
+.NOTE Hier gab es in Quarkus 1.12 eine Änderung zu früheren Quarkus-Versionen
+
+[source,bash]
+----
+$ ls -ls target/quarkus-app/
+total 1
+0 drwxr-xr-x  3 hrupp  staff   96 Mar  3 10:44 app      <1>
+0 drwxr-xr-x  4 hrupp  staff  128 Mar  3 10:44 lib      <2>
+0 drwxr-xr-x  5 hrupp  staff  160 Mar  3 10:44 quarkus
+1 -rw-r--r--  1 hrupp  staff  592 Mar  3 10:44 quarkus-run.jar  <3>
+----
+<1> Der Applications-Code
+<2> Quarkus-Bibliotheken (extensions)
+<3> Das Archiv zum Starten
+
+[source,bash]
+----
+$ java -jar target/quarkus-app/quarkus-run.jar
+__  ____  __  _____   ___  __ ____  ______
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/
+2021-03-03 10:50:18,444 INFO  [io.quarkus] (main) arch-ws 1.0.0-SNAPSHOT on JVM (powered by Quarkus 1.12.0.Final) started in 1.430s. Listening on: http://0.0.0.0:8080
+2021-03-03 10:50:18,447 INFO  [io.quarkus] (main) Profile prod activated.
+2021-03-03 10:50:18,447 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, hibernate-orm-panache, jdbc-postgresql, mutiny, narayana-jta, resteasy, resteasy-jackson, smallrye-context-propagation]
+
+----
+
+
+== Native compilation
+
+[source,bash]
+----
+$ export GRAALVM_HOME=/Library/Java/JavaVirtualMachines/graalvm/Contents/Home/
+$ mvn -Pnative package
+[INFO] Scanning for projects...
+[INFO]
+[INFO] --------------------------< org.acme:arch-ws >--------------------------
+[INFO] Building arch-ws 1.0.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[...]
+[INFO] --- quarkus-maven-plugin:1.12.0.Final:build (default) @ arch-ws ---
+[INFO] [org.jboss.threads] JBoss Threads version 3.2.0.Final
+[INFO] [org.hibernate.Version] HHH000412: Hibernate ORM core version 5.4.28.Final
+[INFO] [io.quarkus.deployment.pkg.steps.JarResultBuildStep] Building native image source jar: /Users/hrupp/src/arch-ws/arch-ws/target/arch-ws-1.0.0-SNAPSHOT-native-image-source-jar/arch-ws-1.0.0-SNAPSHOT-runner.jar
+[INFO] [io.quarkus.deployment.pkg.steps.NativeImageBuildStep] Building native image from /Users/hrupp/src/arch-ws/arch-ws/target/arch-ws-1.0.0-SNAPSHOT-native-image-source-jar/arch-ws-1.0.0-SNAPSHOT-runner.jar
+[INFO] [io.quarkus.deployment.pkg.steps.NativeImageBuildStep] Running Quarkus native-image plugin on GraalVM Version 20.3.1.2 (Java Version 11.0.10+8-jvmci-20.3-b09)
+[INFO] [io.quarkus.deployment.pkg.steps.NativeImageBuildStep] /Library/Java/JavaVirtualMachines/graalvm/Contents/Home/bin/native-image -J-Djava.util.logging.manager=org.jboss.logmanager.LogManager -J-Dsun.nio.ch.maxUpdateArraySize=100 -J-DCoordinatorEnvironmentBean.transactionStatusManagerEnable=false -J-Dvertx.logger-delegate-factory-class-name=io.quarkus.vertx.core.runtime.VertxLogDelegateFactory -J-Dvertx.disableDnsResolver=true -J-Dio.netty.leakDetection.level=DISABLED -J-Dio.netty.allocator.maxOrder=1 -J-Duser.language=de -J-Duser.country=DE -J-Dfile.encoding=UTF-8 --initialize-at-build-time= -H:InitialCollectionPolicy=com.oracle.svm.core.genscavenge.CollectionPolicy\$BySpaceAndTime -H:+JNI -H:+AllowFoldMethods -jar arch-ws-1.0.0-SNAPSHOT-runner.jar -H:FallbackThreshold=0 -H:+ReportExceptionStackTraces -H:-AddAllCharsets -H:EnableURLProtocols=http,https --enable-all-security-services --no-server -H:-UseServiceLoaderFeature -H:+StackTrace arch-ws-1.0.0-SNAPSHOT-runner
+[arch-ws-1.0.0-SNAPSHOT-runner:82457]    classlist:   3.216,55 ms,  1,18 GB
+[arch-ws-1.0.0-SNAPSHOT-runner:82457]        (cap):   6.424,49 ms,  1,18 GB
+[...]
+[arch-ws-1.0.0-SNAPSHOT-runner:82457]        write:   1.431,40 ms,  7,25 GB
+[arch-ws-1.0.0-SNAPSHOT-runner:82457]      [total]: 122.275,60 ms,  7,25 GB
+[WARNING] [io.quarkus.deployment.pkg.steps.NativeImageBuildStep] objcopy executable not found in PATH. Debug symbols will not be separated from executable.
+[WARNING] [io.quarkus.deployment.pkg.steps.NativeImageBuildStep] That will result in a larger native image with debug symbols embedded in it.
+[INFO] [io.quarkus.deployment.QuarkusAugmentor] Quarkus augmentation completed in 129231ms
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:27 min
+----
+
+
+[source,bash]
+----
+$ ls -ls target/
+total 69
+     0 drwxr-xr-x  4 hrupp  staff       128 Mar  3 09:16 arch-ws-1.0.0-SNAPSHOT-native-image-source-jar
+    69 -rwxr-xr-x  1 hrupp  staff  72002128 Mar  3 09:16 arch-ws-1.0.0-SNAPSHOT-runner  <1>
+     1 -rw-r--r--  1 hrupp  staff      7190 Mar  3 09:13 arch-ws-1.0.0-SNAPSHOT.jar
+     1 -rw-r--r--  1 hrupp  staff      4890 Mar  2 11:43 arch-ws-dev.jar
+----
+<1> Das native Executable
+
+[source,bash]
+----
+$ file target/arch-ws-1.0.0-SNAPSHOT-runner
+target/arch-ws-1.0.0-SNAPSHOT-runner: Mach-O 64-bit executable x86_64
+----
+
+[source,bash]
+----
+$ target/arch-ws-1.0.0-SNAPSHOT-runner
+__  ____  __  _____   ___  __ ____  ______
+ --/ __ \/ / / / _ | / _ \/ //_/ / / / __/
+ -/ /_/ / /_/ / __ |/ , _/ ,< / /_/ /\ \
+--\___\_\____/_/ |_/_/|_/_/|_|\____/___/
+2021-03-03 10:28:11,963 INFO  [io.quarkus] (main) arch-ws 1.0.0-SNAPSHOT native (powered by Quarkus 1.12.0.Final) started in 0.142s. Listening on: http://0.0.0.0:8080
+----
+
+
+== Mehr
+
+https://itnext.io/test-your-java-code-with-the-help-of-testcontainers-898d31b64883[Test your Java code with the help of Testcontainers]
+
+https://code.quarkus.io[Quarkus bootstrap configurator]
+
+https://quarkus.io/guides/[Quarkus guides]
